@@ -37,7 +37,7 @@ by Members 1 and 6 and are **not yet included** — see "Status" below.
 | 3 | Data Engineer — dlt + DuckDB | Done |
 | 4 | Data Transformation — dbt | Done |
 | 5 | Data Quality — tests + contracts + lineage | Done |
-| 6 | DevOps — GitHub Actions CI/CD | Pending |
+| 6 | DevOps — GitHub Actions CI/CD | Done |
 | 7 | Monitoring | Done |
 | 8 | Product Owner — docs, backlog, report, slides | Pending |
 
