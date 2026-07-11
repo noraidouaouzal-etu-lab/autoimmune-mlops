@@ -1,0 +1,13 @@
+# Monitoring module dependencies (Member 7 — Aya ADADI)
+fastapi>=0.110
+starlette>=0.36
+uvicorn>=0.29
+pydantic>=2.0
+requests>=2.31
+pandas>=2.0
+numpy>=1.24
+scipy>=1.10
+scikit-learn>=1.3
+joblib>=1.3
+streamlit>=1.30
+pytest>=7.4

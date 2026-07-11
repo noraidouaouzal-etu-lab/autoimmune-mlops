@@ -1,0 +1,5 @@
+logs/*.log
+reports/dashboard_data.json
+reports/drift_report.json
+__pycache__/
+*.pyc

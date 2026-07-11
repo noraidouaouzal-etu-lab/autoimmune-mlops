@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_patients
+    description: >
+      Cleaned, 1:1 view over raw_medical_data.patients: standardized
+      gender casing and normalized diagnosis labels. No rows or columns
+      dropped.
+    columns:
+      - name: patient_id
+        description: >
+          Source patient identifier. NOT guaranteed unique: profiling
+          found 643 patient_id values repeated across rows, consistent
+          with the ~13.8k fully duplicated rows the notebook detects but
+          never drops. Flagged for the Data Quality Engineer; do not rely
+          on patient_id as a primary key until this is resolved upstream.
+        tests:
+          - not_null
+      - name: gender
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['female', 'male']
+      - name: diagnosis
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - normal
+                  - systemic_lupus_erythematosus
+                  - sjogren_syndrome
+                  - graves_disease
+                  - rheumatoid_arthritis
+                  - autoimmune_orchitis
+                  - other_autoimmune_disease
