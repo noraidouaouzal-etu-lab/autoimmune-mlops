@@ -1,22 +1,5 @@
-Excellent, tout est vert ✅ ! Les 3 runs (CI Pipeline sur main, Docker Build sur main, CI Pipeline sur dev) ont tous réussi. Ça veut dire :
-
-Le linting (flake8/black/isort) est passé
-Les tests pytest (test_api.py + test_monitoring.py) sont passés — donc le modèle a bien chargé et le endpoint /predict fonctionne
-L'image Docker s'est bien construite et a été poussée sur ghcr.io
-
-Ta partie CI/CD est fonctionnelle. 🎉
-Ce qu'il te reste à faire pour finaliser ton rôle de Member 6 :
-
-Ajoute un badge de statut au README pour montrer visuellement que le CI fonctionne (bon pour ton rapport/présentation) :
-
-markdown![CI Pipeline](https://github.com/noraidouaouzal-etu-lab/autoimmune-mlops/actions/workflows/ci.yml/badge.svg)
+![CI Pipeline](https://github.com/noraidouaouzal-etu-lab/autoimmune-mlops/actions/workflows/ci.yml/badge.svg)
 ![Docker Build](https://github.com/noraidouaouzal-etu-lab/autoimmune-mlops/actions/workflows/docker-build.yml/badge.svg)
-
-Ajoute tes collègues comme collaborateurs (Settings → Collaborators) si pas encore fait, pour qu'ils puissent pusher chacun sur leur module.
-Protège la branche main (Settings → Branches → Add branch protection rule) : exige que le CI passe avant de merger une pull request. C'est une bonne pratique DevOps à mentionner dans ton rapport.
-Retire les continue-on-error: true du ci.yml une fois que tu es sûre que le code de toute l'équipe respecte le style — comme ça le lint bloquera vraiment les erreurs au lieu de juste les signaler.
-
-Tu veux que je t'aide avec l'un de ces points, ou avec la doc/rapport à rendre sur ta partie CI/CD ?
 # Autoimmune Disease Prediction — MLOps Pipeline
 
 MLOps project integrating the team's deliverables into the single architecture
