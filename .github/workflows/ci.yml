@@ -205,12 +205,12 @@ jobs:
       - name: Run Backend Tests
         env:
           PYTHONPATH: .
-        run: pytest tests/ml/ -v || true
+        run: pytest tests/ml/ -v
 
       - name: Run Monitoring Tests
         env:
           PYTHONPATH: .
-        run: pytest tests/monitoring/ -v || true
+        run: pytest tests/monitoring/ -v
 
   # ==========================================
   # 5. CONTENEURISATION (DOCKER INTEGRATION)
