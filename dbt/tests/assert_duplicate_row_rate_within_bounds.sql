@@ -54,4 +54,8 @@ summary as (
 
 select *
 from summary
+<<<<<<< HEAD
 where duplicate_rate != 0
+=======
+where duplicate_rate < 0.40 or duplicate_rate > 0.60
+>>>>>>> 1acd299ed8cbde9ad3436c15fd256aeac33dd72b

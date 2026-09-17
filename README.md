@@ -32,7 +32,11 @@ by Members 1 and 6 and are **not yet included** — see "Status" below.
 
 | Member | Role | In this repo? |
 |--------|------|---------------|
+<<<<<<< HEAD
 | 1 | MLOps — modeling + MLflow | Done |
+=======
+| 1 | MLOps — modeling + MLflow | Modeling done (notebooks + artifacts in `ml/`). MLflow tracking/registry pending. |
+>>>>>>> 1acd299ed8cbde9ad3436c15fd256aeac33dd72b
 | 2 | Deployment — FastAPI + Docker | Done |
 | 3 | Data Engineer — dlt + DuckDB | Done |
 | 4 | Data Transformation — dbt | Done |
