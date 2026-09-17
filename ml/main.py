@@ -45,8 +45,9 @@ async def lifespan(app: FastAPI):
         with open(os.path.join(ML_DIR, "encoder", "diagnosis.json"), "r") as f:
             label_mapping = json.load(f)
             
-        feature_names = list(joblib.load(os.path.join(ML_DIR, "features", "rfecv_features.pkl")))
-        logger.info("Artifacts loaded successfully!")
+        # Dynamically load the EXACT features and order the model was trained on
+        feature_names = list(model.feature_names_in_)
+        logger.info(f"Artifacts loaded successfully! Model expects {len(feature_names)} features.")
     except Exception as e:
         logger.error(f"Failed to load artifacts: {e}")
         raise RuntimeError(f"Startup failed: {e}")
@@ -77,7 +78,6 @@ app.add_middleware(MonitoringMiddleware)
 app.add_api_route("/metrics", metrics_endpoint, methods=["GET"])
 
 class PatientData(BaseModel):
-    # Original 23 base features
     ESR: float
     RBC_Count: float
     PLT_Count: float
@@ -102,8 +102,7 @@ class PatientData(BaseModel):
     C4: float
     Esbach: float
 
-    # The 15 new features dynamically selected by RFECV
-    # Given default values so the existing UI/Tests don't break
+    # Defaults allow the existing UI to send 23 features without breaking
     crp: float = 0.0
     clinical_symptoms_count: float = 0.0
     ana: float = 0.0
@@ -118,26 +117,36 @@ class PatientData(BaseModel):
     stiffness_in_the_joints: float = 0.0
     brittle_hair_or_hair_loss: float = 0.0
     general_unwell_feeling: float = 0.0
-    gender: float = 0.0  # 0 for female, 1 for male
+    gender: float = 0.0  
 
 # --- Endpoints -------------------------------------------------------------
 @app.post("/predict")
 async def predict(patient: PatientData, request: Request):
     start = time.perf_counter()
     try:
-        # Enforce exact feature ordering expected by the model
         patient_dict = patient.model_dump()
-        input_df = pd.DataFrame([patient_dict])[feature_names]
-        input_scaled = scaler.transform(input_df)
+        input_df = pd.DataFrame([patient_dict])
+        
+        # 1. Ask the scaler what columns it knows, and ONLY scale those
+        scale_cols = list(scaler.feature_names_in_)
+        scaled_array = scaler.transform(input_df[scale_cols])
+        scaled_df = pd.DataFrame(scaled_array, columns=scale_cols)
+        
+        # 2. Add back the unscaled features (like binary flags)
+        for col in feature_names:
+            if col not in scale_cols:
+                scaled_df[col] = input_df[col].values
+                
+        # 3. Enforce the exact column order expected by the model
+        final_input = scaled_df[feature_names]
         
         # Predict
-        pred_idx = model.predict(input_scaled)[0]
+        pred_idx = model.predict(final_input)[0]
         diagnosis = label_mapping[str(pred_idx)]
         
-        # Extract confidence for the Streamlit UI
         confidence = None
         if hasattr(model, "predict_proba"):
-            probs = model.predict_proba(input_scaled)[0]
+            probs = model.predict_proba(final_input)[0]
             confidence = round(float(probs[pred_idx]) * 100, 2)
 
         log_prediction(
