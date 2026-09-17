@@ -9,9 +9,9 @@ models:
     columns:
       - name: patient_id
         description: See stg_patients.patient_id — not guaranteed unique.
-        tests:
+        data_tests:
           - not_null
       - name: c4
         description: log1p-transformed C4 (skew corrected from 2.02 to 0.07).
-        tests:
+        data_tests:
           - not_null
