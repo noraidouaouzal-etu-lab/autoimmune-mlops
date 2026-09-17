@@ -28,7 +28,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 black isort
 
-      # Using `|| true` ensures these steps never fail the pipeline
       - name: Run flake8
         run: flake8 ml monitoring dataops --max-line-length=120 --exclude=__pycache__ --extend-ignore=E203,W503 || true
 
@@ -69,9 +68,7 @@ jobs:
 
       - name: Hydrate DuckDB Database (Ingestion)
         working-directory: ./dataops
-        run: |
-          mkdir -p data/duckdb
-          python ingest_dlt.py 
+        run: python ingest_dlt.py 
 
       - name: Upload DuckDB Artifact
         uses: actions/upload-artifact@v4
@@ -102,16 +99,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install dbt-core dbt-duckdb
           
-      - name: Recreate Mock Docker Path
-        run: |
-          sudo mkdir -p /app/data/duckdb
-          sudo chown -R $USER:$USER /app
-          
-      - name: Download DuckDB Artifact
+      - name: Download DuckDB Artifact natively
         uses: actions/download-artifact@v4
         with:
           name: duckdb-database
-          path: /app/data/duckdb/
+          path: ./dataops/data/duckdb/
         
       - name: Run dbt Data Contracts & Quality Tests
         working-directory: ./dataops/data_transform
@@ -124,7 +116,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: duckdb-final-database
-          path: /app/data/duckdb/autoimmune.duckdb
+          path: ./dataops/data/duckdb/autoimmune.duckdb
           retention-days: 1
 
   # ==========================================
@@ -149,13 +141,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install dlt dbt-core dbt-duckdb dagster dagster-dbt duckdb requests pandas
           
-      - name: Setup Mock Volume Paths
-        working-directory: ./dataops
-        run: |
-          mkdir -p data/duckdb
-          sudo mkdir -p /app/data
-          sudo chown -R $USER:$USER /app
-          ln -s ${{ github.workspace }}/dataops/data/duckdb /app/data/duckdb
+      - name: Download Finalized DuckDB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: duckdb-final-database
+          path: ./dataops/data/duckdb/
           
       - name: Compile dbt Manifest
         working-directory: ./dataops/data_transform
@@ -199,25 +189,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r ml/requirements.txt
-          pip install pytest pytest-cov httpx
+          pip install pytest pytest-cov httpx duckdb
           
-      - name: Recreate Mock Docker Path for ML Loading
-        run: |
-          sudo mkdir -p /app/data/duckdb
-          sudo chown -R $USER:$USER /app
-
-      - name: Download Orchestrated DuckDB Artifact to App Path
+      - name: Download Orchestrated DuckDB Artifact natively
         uses: actions/download-artifact@v4
         with:
           name: orchestrated-duckdb-database
-          path: /app/data/duckdb/
+          path: ./dataops/data/duckdb/
 
       - name: Run ML Training Pipeline
         env:
           PYTHONPATH: .
         run: python ml/train_pipeline.py
 
-      - name: Run Backends Tests
+      - name: Run Backend Tests
         env:
           PYTHONPATH: .
         run: pytest tests/ml/ -v || true
@@ -238,8 +223,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Download the database built through the pipeline
-      - name: Download Orchestrated DuckDB Artifact
+      - name: Download Orchestrated DuckDB Artifact natively
         uses: actions/download-artifact@v4
         with:
           name: orchestrated-duckdb-database

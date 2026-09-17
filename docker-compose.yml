@@ -22,7 +22,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - duckdb_volume:/app/dataops/duckdb
+      # CHANGED: Added /data/ to align with the Python scripts
+      - duckdb_volume:/app/dataops/data/duckdb
     depends_on:
       - dagster
 
@@ -44,7 +45,8 @@ services:
     volumes:
       - ./monitoring/logs:/app/monitoring/logs
       - ./monitoring/reports:/app/monitoring/reports
-      - duckdb_volume:/app/dataops/duckdb
+      # CHANGED: Added /data/ to align with the Python scripts
+      - duckdb_volume:/app/dataops/data/duckdb
     depends_on:
       - backend
     
