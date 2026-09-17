@@ -20,4 +20,6 @@ RUN cd data_transform && dbt clean && dbt deps && dbt parse
 
 EXPOSE 3000
 
+RUN dagster asset materialize -f orchestration.py --select '*'
+
 CMD ["dagster", "dev", "-f", "orchestration.py", "-h", "0.0.0.0", "-p", "3000"]
