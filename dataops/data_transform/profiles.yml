@@ -5,5 +5,5 @@ autoimmune_mlops:
       type: duckdb
       # Path is relative to the directory dbt is invoked from (the dbt/ folder).
       # Matches the repo layout: autoimmune-mlops/duckdb/ and autoimmune-mlops/dbt/
-      path: ../duckdb/autoimmune_pipeline.duckdb
+      path: ../duckdb/autoimmune.duckdb
       threads: 4
