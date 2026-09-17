@@ -16,6 +16,7 @@ COPY monitoring/ ./monitoring/
 
 EXPOSE 8000
 
-# Set WORKDIR to ml so paths in train_pipeline.py and main.py resolve correctly
+# Set WORKDIR to ml so paths in main.py resolve correctly
 WORKDIR /app/ml
-CMD ["bash", "-c", "python train_pipeline.py && uvicorn main:app --host 0.0.0.0 --port 8000"]
+
+CMD ["bash", "-c", "if [ ! -f models/production_model.pkl ]; then echo 'Production model not found! Starting training pipeline...'; python train_pipeline.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]
