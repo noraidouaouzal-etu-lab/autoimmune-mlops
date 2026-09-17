@@ -31,7 +31,7 @@ def main():
 
     # 1. Ingestion
     logger.info(f"Loading data from DuckDB at {DB_PATH}")
-    X, y = load_data_from_duckdb(DB_PATH, table_name="ml_patients_dataset")
+    X, y = load_data_from_duckdb(DB_PATH, table_name="main_marts.ml_patients_dataset")
     
     # 2. Split
     logger.info("Splitting data into train/test sets...")
