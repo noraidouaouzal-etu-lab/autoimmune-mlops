@@ -9,7 +9,14 @@ services:
     environment:
       - PYTHONPATH=/app
     restart: unless-stopped
-    command: ["dagster-webserver", "-h", "0.0.0.0", "-p", "3000", "-f", "orchestration.py"]
+    command: >
+      bash -c "
+      if [ ! -f /app/data/duckdb/autoimmune.duckdb ]; then
+        echo 'Database not found. Auto-bootstrapping data pipeline...';
+        dagster asset materialize -f orchestration.py --select '*';
+      fi;
+      dagster-webserver -h 0.0.0.0 -p 3000 -f orchestration.py
+      "
 
   backend:
     image: ${DOCKERHUB_USERNAME}/autoimmune-backend:latest

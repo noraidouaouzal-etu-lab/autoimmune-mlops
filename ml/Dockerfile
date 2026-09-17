@@ -19,4 +19,5 @@ EXPOSE 8000
 # Set WORKDIR to ml so paths in main.py resolve correctly
 WORKDIR /app/ml
 
-CMD ["bash", "-c", "if [ ! -f models/production_model.pkl ]; then echo 'Production model not found! Starting training pipeline...'; python train_pipeline.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# CHANGED: Added a wait loop. The backend will wait for Dagster to create DuckDB before training.
+CMD ["bash", "-c", "if [ ! -f models/rfe_rf_model.pkl ] && [ ! -f models/production_model.pkl ]; then echo 'Models not found! Waiting for Dagster to build the database...'; while [ ! -f /app/dataops/data/duckdb/autoimmune.duckdb ]; do sleep 5; done; echo 'Database found! Starting training pipeline...'; python train_pipeline.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]
