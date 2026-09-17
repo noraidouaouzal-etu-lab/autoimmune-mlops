@@ -41,7 +41,7 @@ def build_reference(data_path: str) -> dict:
         raise FileNotFoundError(f"DuckDB database not found at {data_path}")
         
     with duckdb.connect(data_path, read_only=True) as con:
-        df = con.execute("SELECT * FROM ml_patients_dataset").df()
+        df = con.execute("SELECT * FROM main_marts.ml_patients_dataset").df()
 
     reference = {"created_at": datetime.now(timezone.utc).isoformat(), "features": {}}
 
