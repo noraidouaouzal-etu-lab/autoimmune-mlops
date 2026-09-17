@@ -13,7 +13,7 @@ sources:
       anti_sm keep the values from the underscore-named source column).
       This is an ingestion-layer data quality issue, flagged here for
       visibility but out of scope for this dbt project.
-    database: autoimmune_pipeline
+    database: autoimmune
     schema: raw_medical_data
     tables:
       - name: patients
