@@ -29,15 +29,16 @@ label_mapping = {}
 feature_names = []
 
 # --- Lifespan Context Manager ----------------------------------------------
-# Must be defined BEFORE initializing FastAPI
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global model, scaler, label_mapping, feature_names
     logger.info("Service starting up... Loading ML artifacts.")
     try:
-        # Note: You are currently hardcoding the Random Forest model. 
-        # Update this path if you start using a dynamic production_model.pkl
-        model_path = os.path.join(ML_DIR, "models", "rfe_rf_model.pkl")
+        model_path = os.path.join(ML_DIR, "models", "production_model.pkl")
+        # Fallback to rfe_rf_model if production_model isn't copied over yet
+        if not os.path.exists(model_path):
+            model_path = os.path.join(ML_DIR, "models", "rfe_rf_model.pkl")
+            
         model = joblib.load(model_path)
         scaler = joblib.load(os.path.join(ML_DIR, "scalers", "rfe_features_scaler.pkl"))
         
@@ -50,7 +51,7 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load artifacts: {e}")
         raise RuntimeError(f"Startup failed: {e}")
         
-    yield  # The API runs and accepts requests while paused at this line
+    yield  
     
     logger.info("Service shutting down cleanly. Clearing memory...")
     model = None
@@ -76,6 +77,7 @@ app.add_middleware(MonitoringMiddleware)
 app.add_api_route("/metrics", metrics_endpoint, methods=["GET"])
 
 class PatientData(BaseModel):
+    # Original 23 base features
     ESR: float
     RBC_Count: float
     PLT_Count: float
@@ -100,12 +102,30 @@ class PatientData(BaseModel):
     C4: float
     Esbach: float
 
+    # The 15 new features dynamically selected by RFECV
+    # Given default values so the existing UI/Tests don't break
+    crp: float = 0.0
+    clinical_symptoms_count: float = 0.0
+    ana: float = 0.0
+    rheumatoid_factor: float = 0.0
+    acpa: float = 0.0
+    anti_tpo: float = 0.0
+    anti_tg: float = 0.0
+    anti_sma: float = 0.0
+    low_grade_fever: float = 0.0
+    dizziness: float = 0.0
+    rashes_and_skin_lesions: float = 0.0
+    stiffness_in_the_joints: float = 0.0
+    brittle_hair_or_hair_loss: float = 0.0
+    general_unwell_feeling: float = 0.0
+    gender: float = 0.0  # 0 for female, 1 for male
+
 # --- Endpoints -------------------------------------------------------------
 @app.post("/predict")
 async def predict(patient: PatientData, request: Request):
     start = time.perf_counter()
     try:
-        # Enforce exact feature ordering
+        # Enforce exact feature ordering expected by the model
         patient_dict = patient.model_dump()
         input_df = pd.DataFrame([patient_dict])[feature_names]
         input_scaled = scaler.transform(input_df)
