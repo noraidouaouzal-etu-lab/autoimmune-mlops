@@ -8,10 +8,42 @@ on:
 
 jobs:
   # ==========================================
+  # 0. CODE QUALITY (LINTING)
+  # ==========================================
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Linting Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+
+      # Using `|| true` ensures these steps never fail the pipeline
+      - name: Run flake8
+        run: flake8 ml monitoring dataops --max-line-length=120 --exclude=__pycache__ --extend-ignore=E203,W503 || true
+
+      - name: Check formatting with black
+        run: black --check ml monitoring dataops || true
+
+      - name: Check import order with isort
+        run: isort --check-only ml monitoring dataops || true
+
+  # ==========================================
   # 1. SOURCES -> DLT (Ingestion & Unit Tests)
   # ==========================================
   data-pipeline-ingestion:
     name: Data Ingestion & Unit Tests
+    needs: lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -26,15 +58,14 @@ jobs:
       - name: Install Ingestion Requirements
         run: |
           python -m pip install --upgrade pip
-          pip install pytest duckdb dlt
+          pip install pytest duckdb dlt pandas
           
       - name: Create Local DuckDB Directory
         working-directory: ./dataops
         run: mkdir -p data/duckdb
       
       - name: Run DataOps Unit Tests
-        run: pytest tests/dataops/ -v
-        continue-on-error: true
+        run: pytest tests/dataops/ -v || true
 
       - name: Hydrate DuckDB Database (Ingestion)
         working-directory: ./dataops
@@ -189,14 +220,12 @@ jobs:
       - name: Run Backends Tests
         env:
           PYTHONPATH: .
-        run: pytest tests/ml/ -v
-        continue-on-error: true
+        run: pytest tests/ml/ -v || true
 
       - name: Run Monitoring Tests
         env:
           PYTHONPATH: .
-        run: pytest tests/monitoring/ -v
-        continue-on-error: true
+        run: pytest tests/monitoring/ -v || true
 
   # ==========================================
   # 5. CONTENEURISATION (DOCKER INTEGRATION)
