@@ -345,7 +345,7 @@ jobs:
               type: "api-key",
               params: { key: process.env.KOMODO_API_KEY, secret: process.env.KOMODO_API_SECRET }
             });
-            await komodo.execute("DeployStack", { stack: "autoimmune_disease_prediction" });
+            await komodo.execute("DeployStack", { stack: "autoimmune_detection_system" });
           }
           run().catch(err => { console.error(err); process.exit(1); });
           EOF
