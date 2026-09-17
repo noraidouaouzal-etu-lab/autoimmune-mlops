@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: int_patients_cleaned
+    description: >
+      stg_patients with constant columns dropped, C4 log-transformed, and
+      highly-correlated (|corr| > 0.85) columns dropped. See the SQL file
+      header for the exact column lists and rationale.
+    columns:
+      - name: patient_id
+        description: See stg_patients.patient_id — not guaranteed unique.
+        data_tests:
+          - not_null
+      - name: c4
+        description: log1p-transformed C4 (skew corrected from 2.02 to 0.07).
+        data_tests:
+          - not_null

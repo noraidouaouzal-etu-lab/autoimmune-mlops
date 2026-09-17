@@ -1,3 +1,5 @@
+![CI Pipeline](https://github.com/noraidouaouzal-etu-lab/autoimmune-mlops/actions/workflows/ci.yml/badge.svg)
+![Docker Build](https://github.com/noraidouaouzal-etu-lab/autoimmune-mlops/actions/workflows/docker-build.yml/badge.svg)
 # Autoimmune Disease Prediction — MLOps Pipeline
 
 MLOps project integrating the team's deliverables into the single architecture
@@ -30,12 +32,12 @@ by Members 1 and 6 and are **not yet included** — see "Status" below.
 
 | Member | Role | In this repo? |
 |--------|------|---------------|
-| 1 | MLOps — modeling + MLflow | Modeling done (notebooks + artifacts in `ml/`). MLflow tracking/registry pending. |
+| 1 | MLOps — modeling + MLflow | Done|
 | 2 | Deployment — FastAPI + Docker | Done |
 | 3 | Data Engineer — dlt + DuckDB | Done |
 | 4 | Data Transformation — dbt | Done |
 | 5 | Data Quality — tests + contracts + lineage | Done |
-| 6 | DevOps — GitHub Actions CI/CD | Pending |
+| 6 | DevOps — GitHub Actions CI/CD | Done |
 | 7 | Monitoring | Done |
 | 8 | Product Owner — docs, backlog, report, slides | Pending |
 

@@ -1,3 +1,4 @@
+import duckdb
 import argparse
 import json
 import os
@@ -34,13 +35,14 @@ PSI_ALERT = 0.25
 KS_ALPHA = 0.05
 N_BINS = 10
 
-
-# ---------------------------------------------------------------------------
-# Reference building
-# ---------------------------------------------------------------------------
 def build_reference(data_path: str) -> dict:
-    """Compute reference bin edges + stats from the training dataset."""
-    df = pd.read_csv(data_path)
+    """Compute reference bin edges + stats from the training dataset in DuckDB."""
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"DuckDB database not found at {data_path}")
+        
+    with duckdb.connect(data_path, read_only=True) as con:
+        df = con.execute("SELECT * FROM main_marts.ml_patients_dataset").df()
+
     reference = {"created_at": datetime.now(timezone.utc).isoformat(), "features": {}}
 
     for feat in MONITORED_FEATURES:
@@ -49,10 +51,10 @@ def build_reference(data_path: str) -> dict:
         series = pd.to_numeric(df[feat], errors="coerce").dropna()
         if series.empty:
             continue
-        # Quantile-based bin edges make PSI robust to skewed clinical values.
+        
         quantiles = np.linspace(0, 1, N_BINS + 1)
         edges = np.unique(np.quantile(series, quantiles))
-        if len(edges) < 3:  # near-constant feature: fall back to min/max span
+        if len(edges) < 3: 
             edges = np.linspace(series.min(), series.max() + 1e-9, 3)
         counts, _ = np.histogram(series, bins=edges)
         proportions = counts / counts.sum()
@@ -65,9 +67,8 @@ def build_reference(data_path: str) -> dict:
             "sample": series.sample(min(2000, len(series)), random_state=42).tolist(),
         }
 
-    # Reference label distribution, if present.
-    if "Diagnosis" in df.columns:
-        vc = df["Diagnosis"].value_counts(normalize=True).sort_index()
+    if "diagnosis" in df.columns:
+        vc = df["diagnosis"].value_counts(normalize=True).sort_index()
         reference["label_distribution"] = {str(k): float(v) for k, v in vc.items()}
 
     with open(REFERENCE_FILE, "w", encoding="utf-8") as f:
@@ -206,8 +207,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Data & prediction drift detector.")
     parser.add_argument("--build-reference", action="store_true",
                         help="Build reference distribution from training data.")
-    parser.add_argument("--data", default=os.path.join(_THIS_DIR, "..", "data", "CleanedDataset.csv"),
-                        help="Path to the training CSV for reference building.")
+    # UPDATED DEFAULT PATH TO MATCH DOCKER VOLUME
+    parser.add_argument("--data", default="/app/dataops/data/duckdb/autoimmune.duckdb",
+                        help="Path to the DuckDB database for reference building.")
     parser.add_argument("--check", action="store_true", help="Run a drift check.")
     parser.add_argument("--last-n", type=int, default=None,
                         help="Only use the last N logged predictions.")

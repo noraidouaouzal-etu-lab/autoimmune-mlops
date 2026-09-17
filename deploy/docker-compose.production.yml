@@ -1,0 +1,71 @@
+services:
+  dagster:
+    image: ${DOCKERHUB_USERNAME}/autoimmune-dagster:latest
+    container_name: autoimmune_disease_prediction-dagster
+    ports:
+      - "4001:3000"
+    volumes:
+      - autoimmune_disease_prediction-duckdb_volume:/app/data/duckdb
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    command: >
+      bash -c "
+      if [ ! -f /app/data/duckdb/autoimmune.duckdb ]; then
+        echo 'Database not found. Auto-bootstrapping data pipeline...';
+        dagster asset materialize -f orchestration.py --select '*';
+      fi;
+      dagster-webserver -h 0.0.0.0 -p 3000 -f orchestration.py
+      "
+
+  backend:
+    image: ${DOCKERHUB_USERNAME}/autoimmune-backend:latest
+    container_name: autoimmune_disease_prediction-backend
+    ports:
+      - "4002:8000"
+    volumes:
+      - autoimmune_disease_prediction-duckdb_volume:/app/dataops/data/duckdb
+    depends_on:
+      - dagster
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/autoimmune-frontend:latest
+    container_name: autoimmune_disease_prediction-frontend
+    ports:
+      - "4003:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  monitoring:
+    image: ${DOCKERHUB_USERNAME}/autoimmune-monitoring:latest
+    container_name: autoimmune_disease_prediction-monitoring
+    volumes:
+      - autoimmune_disease_prediction-logs:/app/monitoring/logs
+      - autoimmune_disease_prediction-reports:/app/monitoring/reports
+      - autoimmune_disease_prediction-duckdb_volume:/app/dataops/data/duckdb
+    depends_on:
+      - backend
+    restart: unless-stopped
+    
+  dashboard:
+    image: ${DOCKERHUB_USERNAME}/autoimmune-dashboard:latest
+    container_name: autoimmune_disease_prediction-dashboard
+    ports:
+      - "4004:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    volumes:
+      - autoimmune_disease_prediction-logs:/app/monitoring/logs
+      - autoimmune_disease_prediction-reports:/app/monitoring/reports
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  autoimmune_disease_prediction-duckdb_volume:
+  autoimmune_disease_prediction-logs:
+  autoimmune_disease_prediction-reports:

@@ -1,0 +1,33 @@
+version: 2
+
+sources:
+  - name: raw_medical_data
+    description: >
+      Raw dataset loaded by the dlt pipeline (Data Engineer) into DuckDB.
+      Physical database file: duckdb/autoimmune_pipeline.duckdb.
+      dlt normalizes source CSV column names to snake_case on load, which
+      causes two column-name collisions worth knowing about: the source CSV
+      has both "Anti-dsDNA" and "Anti_dsDNA" (dash vs underscore), and both
+      "Anti-Sm" and "Anti_Sm". Both pairs normalize to the same snake_case
+      name, so only one value per pair survives ingestion (anti_ds_dna,
+      anti_sm keep the values from the underscore-named source column).
+      This is an ingestion-layer data quality issue, flagged here for
+      visibility but out of scope for this dbt project.
+    database: autoimmune
+    schema: raw_medical_data
+    tables:
+      - name: patients
+        description: >
+          One row per patient lab record, loaded via dlt
+          (dlt_pipeline/ingestion.py), table_name="patients".
+        loaded_at_field: _dlt_load_id
+        columns:
+          - name: patient_id
+            description: Source patient identifier (not a dbt-generated key).
+          - name: gender
+            description: Raw gender string, mixed case ("Male", "Female").
+          - name: diagnosis
+            description: >
+              Raw diagnosis label as free text, e.g. "Systemic lupus
+              erythematosus (SLE)", "Sjögren syndrome", "Graves' disease",
+              "Rheumatoid arthritis", "Autoimmune orchitis", "Normal".

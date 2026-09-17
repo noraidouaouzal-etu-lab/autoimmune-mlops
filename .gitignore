@@ -9,3 +9,7 @@ dbt/logs/
 # monitoring runtime output (keep folders)
 monitoring/logs/*.log
 monitoring/reports/*.json
+.env
+
+mlflow.db
+mlruns/

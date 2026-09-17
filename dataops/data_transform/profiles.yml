@@ -1,0 +1,8 @@
+autoimmune_mlops:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # This perfectly aligns with where dlt saves the database
+      path: ../data/duckdb/autoimmune.duckdb
+      threads: 4
