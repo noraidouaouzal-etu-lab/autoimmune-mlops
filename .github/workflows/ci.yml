@@ -8,44 +8,10 @@ on:
 
 jobs:
   # ==========================================
-  # 0. CODE QUALITY (LINTING)
-  # ==========================================
-  lint:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install Linting Tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 black isort
-
-      - name: Run flake8
-        run: flake8 ml monitoring dataops --max-line-length=120 --exclude=__pycache__ --extend-ignore=E203,W503
-        continue-on-error: true
-
-      - name: Check formatting with black
-        run: black --check ml monitoring dataops
-        continue-on-error: true
-
-      - name: Check import order with isort
-        run: isort --check-only ml monitoring dataops
-        continue-on-error: true
-
-  # ==========================================
   # 1. SOURCES -> DLT (Ingestion & Unit Tests)
   # ==========================================
   data-pipeline-ingestion:
     name: Data Ingestion & Unit Tests
-    needs: lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
