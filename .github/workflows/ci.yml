@@ -261,7 +261,7 @@ jobs:
         run: docker compose down
   
   # ==========================================
-  # 6. CI/CD -> DOCKERHUB PUSH (BLANK)
+  # 6. CI/CD -> DOCKERHUB PUSH
   # ==========================================
   docker-push:
     name: Push Images to DockerHub
@@ -284,7 +284,8 @@ jobs:
       - name: Build and Push Backend
         uses: docker/build-push-action@v5
         with:
-          context: ./ml
+          context: .
+          file: ./ml/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoimmune-backend:latest
 
@@ -292,6 +293,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoimmune-frontend:latest
 
@@ -299,20 +301,23 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./dataops
+          file: ./dataops/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoimmune-dagster:latest
 
       - name: Build and Push Monitoring
         uses: docker/build-push-action@v5
         with:
-          context: ./monitoring
+          context: .
+          file: ./monitoring/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoimmune-monitoring:latest
 
       - name: Build and Push Dashboard
         uses: docker/build-push-action@v5
         with:
-          context: ./monitoring/dashboard
+          context: .
+          file: ./monitoring/dashboard/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoimmune-dashboard:latest
           
