@@ -14,24 +14,22 @@ models:
           with the ~13.8k fully duplicated rows the notebook detects but
           never drops. Flagged for the Data Quality Engineer; do not rely
           on patient_id as a primary key until this is resolved upstream.
-        tests:
+        data_tests:
           - not_null
       - name: gender
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values: ['female', 'male']
+              values: ['female', 'male']
       - name: diagnosis
-        tests:
+        data_tests:
           - not_null
           - accepted_values:
-              arguments:
-                values:
-                  - normal
-                  - systemic_lupus_erythematosus
-                  - sjogren_syndrome
-                  - graves_disease
-                  - rheumatoid_arthritis
-                  - autoimmune_orchitis
-                  - other_autoimmune_disease
+              values:
+                - normal
+                - systemic_lupus_erythematosus
+                - sjogren_syndrome
+                - graves_disease
+                - rheumatoid_arthritis
+                - autoimmune_orchitis
+                - other_autoimmune_disease
