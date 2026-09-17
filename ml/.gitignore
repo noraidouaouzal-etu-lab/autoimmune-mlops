@@ -31,3 +31,6 @@ Thumbs.db
 # scalers/*.pkl
 # features/*.pkl
 # models/model_metadata.json
+
+mlflow.db
+mlruns/
