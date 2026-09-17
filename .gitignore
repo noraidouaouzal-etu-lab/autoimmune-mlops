@@ -9,8 +9,5 @@ dbt/logs/
 # monitoring runtime output (keep folders)
 monitoring/logs/*.log
 monitoring/reports/*.json
-<<<<<<< HEAD
 mlflow.db
 mlruns/
-=======
->>>>>>> 1acd299ed8cbde9ad3436c15fd256aeac33dd72b
