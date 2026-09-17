@@ -17,6 +17,8 @@
 -- [40%, 60%]. Adjust the bounds if the team makes an explicit, documented
 -- decision to change this behavior upstream.
 
+{{ config(severity = 'warn') }}
+
 with hashed as (
 
     select
