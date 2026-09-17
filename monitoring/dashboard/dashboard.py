@@ -4,14 +4,20 @@ import sys
 import pandas as pd
 import streamlit as st
 
-# Make the monitoring package importable when run from this subfolder.
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
 from monitoring.metrics import build_dashboard_data
 from monitoring.health_monitor import probe_once, _append_log, DEFAULT_URL
+
+BACKEND_URL = os.getenv("BACKEND_URL", DEFAULT_URL)
+
+with st.sidebar:
+    st.markdown("### Monitoring")
+    st.caption("Autoimmune Disease Prediction — service observability")
+    api_url = st.text_input("API base URL", BACKEND_URL)
 
 st.set_page_config(
     page_title="Autoimmune ML • Monitoring",

@@ -1,11 +1,67 @@
+version: '3.8'
+
 services:
-  api:
+  dagster:
+    container_name: dagster-engine
+    build:
+      context: ./dataops
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dataops:/app
+      - duckdb_volume:/app/data/duckdb
+    environment:
+      - PYTHONPATH=/app
+
+  backend:
+    container_name: ml-backend
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: ml/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      # Persist logs/reports produced by the monitoring package
+      - duckdb_volume:/app/dataops/duckdb
+    depends_on:
+      - dagster
+
+  frontend:
+    container_name: ml-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+
+  monitoring:
+    container_name: ml-monitoring
+    build:
+      context: .
+      dockerfile: monitoring/Dockerfile
+    volumes:
       - ./monitoring/logs:/app/monitoring/logs
       - ./monitoring/reports:/app/monitoring/reports
+      - duckdb_volume:/app/dataops/duckdb
+    depends_on:
+      - backend
+    
+  dashboard:
+    container_name: ml-dashboard
+    build:
+      context: .
+      dockerfile: monitoring/dashboard/Dockerfile
+    ports:
+      - "8502:8501"
+    environment:
+      - BACKEND_URL=http://ml-backend:8000
+    volumes:
+      - ./monitoring/logs:/app/monitoring/logs
+      - ./monitoring/reports:/app/monitoring/reports
+    depends_on:
+      - backend
+
+volumes:
+  duckdb_volume:

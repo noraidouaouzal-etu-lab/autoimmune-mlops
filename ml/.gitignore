@@ -1,0 +1,33 @@
+# --- Python Bytecode & Build Artifacts ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+
+# --- Virtual Environments ---
+venv/
+ENV/
+env/
+.venv/
+
+# --- IDEs & Operating Systems ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Jupyter Checkpoints (if applicable) ---
+.ipynb_checkpoints/
+
+# --- ML Artifacts & Outputs ---
+# (Uncomment if you don't want to track locally trained pkl files or metadata in git)
+# models/*.pkl
+# scalers/*.pkl
+# features/*.pkl
+# models/model_metadata.json

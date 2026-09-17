@@ -1,0 +1,10 @@
+__pycache__/
+
+dbt_packages/
+logs/
+target/
+dagster_home/
+.DS_Store
+data/duckdb/*
+
+venv/
