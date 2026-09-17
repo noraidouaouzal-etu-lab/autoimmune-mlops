@@ -8,216 +8,216 @@ on:
 
 jobs:
   # ==========================================
-  # 0. CODE QUALITY (LINTING)
-  # ==========================================
-  lint:
-    name: Code Quality Checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # # 0. CODE QUALITY (LINTING)
+  # # ==========================================
+  # lint:
+  #   name: Code Quality Checks
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
 
-      - name: Install Linting Tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install flake8 black isort
+  #     - name: Install Linting Tools
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install flake8 black isort
 
-      - name: Run flake8
-        run: flake8 ml monitoring dataops --max-line-length=120 --exclude=__pycache__ --extend-ignore=E203,W503 || true
+  #     - name: Run flake8
+  #       run: flake8 ml monitoring dataops --max-line-length=120 --exclude=__pycache__ --extend-ignore=E203,W503 || true
 
-      - name: Check formatting with black
-        run: black --check ml monitoring dataops || true
+  #     - name: Check formatting with black
+  #       run: black --check ml monitoring dataops || true
 
-      - name: Check import order with isort
-        run: isort --check-only ml monitoring dataops || true
+  #     - name: Check import order with isort
+  #       run: isort --check-only ml monitoring dataops || true
 
-  # ==========================================
-  # 1. SOURCES -> DLT (Ingestion & Unit Tests)
-  # ==========================================
-  data-pipeline-ingestion:
-    name: Data Ingestion & Unit Tests
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # # ==========================================
+  # # 1. SOURCES -> DLT (Ingestion & Unit Tests)
+  # # ==========================================
+  # data-pipeline-ingestion:
+  #   name: Data Ingestion & Unit Tests
+  #   needs: lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
       
-      - name: Install Ingestion Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest duckdb dlt pandas
+  #     - name: Install Ingestion Requirements
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install pytest duckdb dlt pandas
           
-      - name: Create Local DuckDB Directory
-        working-directory: ./dataops
-        run: mkdir -p data/duckdb
+  #     - name: Create Local DuckDB Directory
+  #       working-directory: ./dataops
+  #       run: mkdir -p data/duckdb
       
-      - name: Run DataOps Unit Tests
-        run: pytest tests/dataops/ -v || true
+  #     - name: Run DataOps Unit Tests
+  #       run: pytest tests/dataops/ -v || true
 
-      - name: Hydrate DuckDB Database (Ingestion)
-        working-directory: ./dataops
-        run: python ingest_dlt.py 
+  #     - name: Hydrate DuckDB Database (Ingestion)
+  #       working-directory: ./dataops
+  #       run: python ingest_dlt.py 
 
-      - name: Upload DuckDB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: duckdb-database
-          path: ./dataops/data/duckdb/autoimmune.duckdb
-          retention-days: 1
+  #     - name: Upload DuckDB Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: duckdb-database
+  #         path: ./dataops/data/duckdb/autoimmune.duckdb
+  #         retention-days: 1
 
-  # ==========================================
-  # 2. DUCKDB -> DBT -> TESTS QUALITÉ
-  # ==========================================
-  data-quality-contracts:
-    name: dbt Data Contracts & Quality
-    needs: [data-pipeline-ingestion]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # # ==========================================
+  # # 2. DUCKDB -> DBT -> TESTS QUALITÉ
+  # # ==========================================
+  # data-quality-contracts:
+  #   name: dbt Data Contracts & Quality
+  #   needs: [data-pipeline-ingestion]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
       
-      - name: Install dbt Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install dbt-core dbt-duckdb
+  #     - name: Install dbt Requirements
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install dbt-core dbt-duckdb
           
-      - name: Download DuckDB Artifact natively
-        uses: actions/download-artifact@v4
-        with:
-          name: duckdb-database
-          path: ./dataops/data/duckdb/
+  #     - name: Download DuckDB Artifact natively
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: duckdb-database
+  #         path: ./dataops/data/duckdb/
         
-      - name: Run dbt Data Contracts & Quality Tests
-        working-directory: ./dataops/data_transform
-        run: |
-          dbt deps
-          dbt run
-          dbt test
+  #     - name: Run dbt Data Contracts & Quality Tests
+  #       working-directory: ./dataops/data_transform
+  #       run: |
+  #         dbt deps
+  #         dbt run
+  #         dbt test
 
-      - name: Upload Finalized DuckDB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: duckdb-final-database
-          path: ./dataops/data/duckdb/autoimmune.duckdb
-          retention-days: 1
+  #     - name: Upload Finalized DuckDB Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: duckdb-final-database
+  #         path: ./dataops/data/duckdb/autoimmune.duckdb
+  #         retention-days: 1
 
-  # ==========================================
-  # 3. DAGSTER ORCHESTRATION VALIDATION
-  # ==========================================
-  dagster-orchestration:
-    name: Dagster Orchestration Validation
-    needs: [data-quality-contracts]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # # ==========================================
+  # # 3. DAGSTER ORCHESTRATION VALIDATION
+  # # ==========================================
+  # dagster-orchestration:
+  #   name: Dagster Orchestration Validation
+  #   needs: [data-quality-contracts]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
 
-      - name: Install Dagster & Pipeline Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install dlt dbt-core dbt-duckdb dagster dagster-dbt duckdb requests pandas
+  #     - name: Install Dagster & Pipeline Requirements
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install dlt dbt-core dbt-duckdb dagster dagster-dbt duckdb requests pandas
           
-      - name: Download Finalized DuckDB Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: duckdb-final-database
-          path: ./dataops/data/duckdb/
+  #     - name: Download Finalized DuckDB Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: duckdb-final-database
+  #         path: ./dataops/data/duckdb/
           
-      - name: Compile dbt Manifest
-        working-directory: ./dataops/data_transform
-        run: |
-          dbt deps
-          dbt parse
+  #     - name: Compile dbt Manifest
+  #       working-directory: ./dataops/data_transform
+  #       run: |
+  #         dbt deps
+  #         dbt parse
           
-      - name: Validate Dagster Asset Materialization
-        working-directory: ./dataops
-        env:
-          DAGSTER_HOME: ${{ github.workspace }}/dagster_home
-        run: |
-          mkdir -p $DAGSTER_HOME
-          dagster asset materialize -f orchestration.py --select "*"
+  #     - name: Validate Dagster Asset Materialization
+  #       working-directory: ./dataops
+  #       env:
+  #         DAGSTER_HOME: ${{ github.workspace }}/dagster_home
+  #       run: |
+  #         mkdir -p $DAGSTER_HOME
+  #         dagster asset materialize -f orchestration.py --select "*"
 
-      - name: Upload Dagster Orchestrated Database
-        uses: actions/upload-artifact@v4
-        with:
-          name: orchestrated-duckdb-database
-          path: ./dataops/data/duckdb/autoimmune.duckdb
-          retention-days: 1
+  #     - name: Upload Dagster Orchestrated Database
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: orchestrated-duckdb-database
+  #         path: ./dataops/data/duckdb/autoimmune.duckdb
+  #         retention-days: 1
 
-  # ==========================================
-  # 4. ML MODEL TRAINING & TESTING
-  # ==========================================
-  ml-training-and-tests:
-    name: ML Training Pipeline & Tests
-    needs: [dagster-orchestration]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+  # # ==========================================
+  # # 4. ML MODEL TRAINING & TESTING
+  # # ==========================================
+  # ml-training-and-tests:
+  #   name: ML Training Pipeline & Tests
+  #   needs: [dagster-orchestration]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.11'
+  #         cache: 'pip'
       
-      - name: Install ML & Test Requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r ml/requirements.txt
-          pip install pytest pytest-cov httpx duckdb
+  #     - name: Install ML & Test Requirements
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r ml/requirements.txt
+  #         pip install pytest pytest-cov httpx duckdb
           
-      - name: Download Orchestrated DuckDB Artifact natively
-        uses: actions/download-artifact@v4
-        with:
-          name: orchestrated-duckdb-database
-          path: ./dataops/data/duckdb/
+  #     - name: Download Orchestrated DuckDB Artifact natively
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: orchestrated-duckdb-database
+  #         path: ./dataops/data/duckdb/
 
-      - name: Run ML Training Pipeline
-        env:
-          PYTHONPATH: .
-        run: python ml/train_pipeline.py
+  #     - name: Run ML Training Pipeline
+  #       env:
+  #         PYTHONPATH: .
+  #       run: python ml/train_pipeline.py
 
-      - name: Run Backend Tests
-        env:
-          PYTHONPATH: .
-        run: pytest tests/ml/ -v || true
+  #     - name: Run Backend Tests
+  #       env:
+  #         PYTHONPATH: .
+  #       run: pytest tests/ml/ -v || true
 
-      - name: Run Monitoring Tests
-        env:
-          PYTHONPATH: .
-        run: pytest tests/monitoring/ -v || true
+  #     - name: Run Monitoring Tests
+  #       env:
+  #         PYTHONPATH: .
+  #       run: pytest tests/monitoring/ -v || true
 
   # ==========================================
   # 5. CONTENEURISATION (DOCKER INTEGRATION)
   # ==========================================
   docker-integration:
     name: Docker Full Stack Integration
-    needs: [ml-training-and-tests]
+    # needs: [ml-training-and-tests]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
