@@ -1,9 +1,9 @@
 [[stack]]
-name = "autoimmune_disease_prediction"
+name = "autoimmune_detection_system"
 
 [stack.config]
 server = "vh3"
-project_name = "autoimmune_disease_prediction"
+project_name = "autoimmune_detection_system"
 auto_update = true
 auto_update_all_services = true
 repo = "noraidouaouzal-etu-lab/autoimmune-mlops"

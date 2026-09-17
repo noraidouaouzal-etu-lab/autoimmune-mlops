@@ -5,7 +5,7 @@ services:
     ports:
       - "4001:3000"
     volumes:
-      - autoimmune_disease_prediction-shared_pipeline_data:/app/data
+      - autoimmune_disease_prediction-duckdb_volume:/app/data/duckdb
     environment:
       - PYTHONPATH=/app
     restart: unless-stopped
@@ -16,12 +16,11 @@ services:
     container_name: autoimmune_disease_prediction-backend
     ports:
       - "4002:8000"
-    environment:
-      - DUCKDB_PATH=/app/data/duckdb/fsbm.duckdb
     volumes:
-      - autoimmune_disease_prediction-shared_pipeline_data:/app/data
+      - autoimmune_disease_prediction-duckdb_volume:/app/dataops/data/duckdb
     depends_on:
       - dagster
+    restart: unless-stopped
 
   frontend:
     image: ${DOCKERHUB_USERNAME}/autoimmune-frontend:latest
@@ -29,7 +28,7 @@ services:
     ports:
       - "4003:8501"
     environment:
-    - BACKEND_URL=http://backend:8000
+      - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
     restart: unless-stopped
@@ -40,7 +39,7 @@ services:
     volumes:
       - autoimmune_disease_prediction-logs:/app/monitoring/logs
       - autoimmune_disease_prediction-reports:/app/monitoring/reports
-      - autoimmune_disease_prediction-shared_pipeline_data:/app/data
+      - autoimmune_disease_prediction-duckdb_volume:/app/dataops/data/duckdb
     depends_on:
       - backend
     restart: unless-stopped
@@ -51,15 +50,15 @@ services:
     ports:
       - "4004:8501"
     environment:
-      - BACKEND_URL=http://ml-backend:8000
+      - BACKEND_URL=http://backend:8000
     volumes:
       - autoimmune_disease_prediction-logs:/app/monitoring/logs
       - autoimmune_disease_prediction-reports:/app/monitoring/reports
     depends_on:
       - backend
+    restart: unless-stopped
 
 volumes:
-  duckdb_volume:
+  autoimmune_disease_prediction-duckdb_volume:
   autoimmune_disease_prediction-logs:
   autoimmune_disease_prediction-reports:
-  autoimmune_disease_prediction-shared_pipeline_data:

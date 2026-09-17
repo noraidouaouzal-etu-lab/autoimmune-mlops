@@ -27,10 +27,7 @@ Thumbs.db
 
 # --- ML Artifacts & Outputs ---
 # (Uncomment if you don't want to track locally trained pkl files or metadata in git)
-# models/*.pkl
-# scalers/*.pkl
-# features/*.pkl
-# models/model_metadata.json
-
-mlflow.db
-mlruns/
+models/*.pkl
+scalers/*.pkl
+features/*.pkl
+models/model_metadata.json
