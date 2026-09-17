@@ -327,13 +327,28 @@ jobs:
   # ==========================================
   komodo-deploy:
     name: Automated Deployment (Komodo)
-    needs: [docker-push]
+    needs: docker-push
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      
-      - name: Komodo Deployment Step (Placeholder)
+      - name: Trigger Komodo via Official SDK
+        env:
+          KOMODO_API_KEY: ${{ secrets.KOMODO_API_KEY }}
+          KOMODO_API_SECRET: ${{ secrets.KOMODO_API_SECRET }}
         run: |
-          echo "Komodo deployment workflow goes here."
+          npm install komodo_client
+          cat << 'EOF' > deploy.mjs
+          global.localStorage = { getItem: () => null, setItem: () => {} };
+          const { KomodoClient } = await import("komodo_client");
+          async function run() {
+            const komodo = KomodoClient("https://komodo.s3.fsbm.ma", {
+              type: "api-key",
+              params: { key: process.env.KOMODO_API_KEY, secret: process.env.KOMODO_API_SECRET }
+            });
+            await komodo.execute("DeployStack", { stack: "autoimmune_disease_prediction" });
+          }
+          run().catch(err => { console.error(err); process.exit(1); });
+          EOF
+          node deploy.mjs
+
+       
