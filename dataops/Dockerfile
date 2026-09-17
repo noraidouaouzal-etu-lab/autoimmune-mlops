@@ -20,6 +20,5 @@ RUN cd data_transform && dbt clean && dbt deps && dbt parse
 
 EXPOSE 3000
 
-RUN dagster asset materialize -f orchestration.py --select '*'
-
-CMD ["dagster", "dev", "-f", "orchestration.py", "-h", "0.0.0.0", "-p", "3000"]
+# Autonomous Boot Sequence: Check for fully built marts -> Materialize if missing -> Start Webserver
+CMD ["bash", "-c", "echo 'Checking if database and marts are fully built...'; if ! python -c \"import duckdb; duckdb.connect('/app/data/duckdb/autoimmune.duckdb', read_only=True).execute('SELECT 1 FROM main_marts.ml_patients_dataset')\" 2>/dev/null; then echo 'Final data marts not found! Auto-bootstrapping data pipeline...'; echo 'Step 1: Refreshing dbt dependencies...'; cd data_transform && dbt deps && dbt parse && cd ..; echo 'Step 2: Materializing Dagster assets...'; dagster asset materialize -f orchestration.py --select '*'; echo 'Data pipeline execution completed!'; else echo 'Database and marts are already fully built. Skipping bootstrap.'; fi; echo 'Starting Dagster Webserver...'; dagster-webserver -h 0.0.0.0 -p 3000 -f orchestration.py"]
