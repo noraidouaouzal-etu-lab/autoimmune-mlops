@@ -1,0 +1,11 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist logs/reports produced by the monitoring package
+      - ./monitoring/logs:/app/monitoring/logs
+      - ./monitoring/reports:/app/monitoring/reports
