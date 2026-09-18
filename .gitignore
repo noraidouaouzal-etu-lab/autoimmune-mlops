@@ -12,3 +12,6 @@ monitoring/reports/*.json
 .env
 
 mlflow.db
+
+# scratch output of tests/e2e_integration.sh
+prediction.txt
