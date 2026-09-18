@@ -6,12 +6,40 @@ MLOps project integrating the team's deliverables into the single architecture
 from the project brief:
 
 ```
-Dataset -> dlt -> DuckDB -> dbt -> Data Quality Tests -> ML Model -> [MLflow]
-        -> FastAPI -> Docker -> [GitHub Actions] -> Monitoring
+Dataset -> dlt -> DuckDB -> dbt -> Data Quality Tests -> ML Model -> MLflow
+        -> FastAPI -> Docker -> GitHub Actions -> Monitoring
 ```
 
-Stages in `[brackets]` (MLflow tracking/registry, GitHub Actions CI) are owned
-by Members 1 and 6 and are **not yet included** — see "Status" below.
+## MLflow tracking & model registry
+
+`ml/train_pipeline.py` logs every training execution to MLflow:
+
+- one parent run (`train_pipeline`) with dataset sizes, the 23 selected
+  features, the scaler / encoder / metadata artifacts and the champion metrics;
+- one nested run per candidate (`RandomForestClassifier`, `SVC`) with its
+  hyperparameters, test metrics and composite score
+  (mean of balanced accuracy and weighted F1);
+- the champion is logged with a signature and registered as
+  `autoimmune-classifier`, alias `champion`.
+
+Where it writes is controlled by env vars:
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `MLFLOW_TRACKING_URI` | `sqlite:///ml/mlflow.db` (artifacts in `ml/mlruns/`) | Docker Compose sets `http://mlflow:5000`. |
+| `MLFLOW_EXPERIMENT_NAME` | `autoimmune-classification` | |
+| `MLFLOW_MODEL_NAME` | `autoimmune-classifier` | Registered model name. |
+
+Local run and UI:
+
+```bash
+cd ml && python train_pipeline.py && cd ..
+mlflow ui --backend-store-uri sqlite:///ml/mlflow.db --port 5000   # http://localhost:5000
+```
+
+In Docker, the `mlflow` service (port 5000, data in the `mlflow_volume`
+volume) starts with the stack; the backend container trains once on first
+boot, logs to that server, then serves the resulting `production_model.pkl`.
 
 ## Repository layout
 

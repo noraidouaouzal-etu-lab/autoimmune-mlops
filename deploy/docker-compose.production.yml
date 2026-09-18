@@ -10,6 +10,20 @@ services:
       - PYTHONPATH=/app
     restart: unless-stopped
 
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.16.1
+    container_name: autoimmune_disease_prediction-mlflow
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --allowed-hosts "*"
+    ports:
+      - "4005:5000"
+    volumes:
+      - autoimmune_disease_prediction-mlflow_volume:/mlflow
+    restart: unless-stopped
+
   backend:
     image: ${DOCKERHUB_USERNAME}/autoimmune-backend:latest
     container_name: autoimmune_disease_prediction-backend
@@ -17,8 +31,12 @@ services:
       - "4002:8000"
     volumes:
       - autoimmune_disease_prediction-duckdb_volume:/app/dataops/data/duckdb
+      - autoimmune_disease_prediction-logs:/app/monitoring/logs
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
       - dagster
+      - mlflow
     restart: unless-stopped
 
   frontend:
@@ -61,3 +79,4 @@ volumes:
   autoimmune_disease_prediction-duckdb_volume:
   autoimmune_disease_prediction-logs:
   autoimmune_disease_prediction-reports:
+  autoimmune_disease_prediction-mlflow_volume:

@@ -1,0 +1,1 @@
+{"diagnosis":"autoimmune_orchitis","confidence":70.7,"status":"success"}

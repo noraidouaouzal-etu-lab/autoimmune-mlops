@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, ".."))
+_PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 

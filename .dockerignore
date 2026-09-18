@@ -1,0 +1,15 @@
+# Keep the build context small and make sure generated ML outputs never end up
+# baked into images (the backend trains on first start and logs to MLflow).
+.git
+.venv
+**/__pycache__
+**/*.pyc
+ml/mlruns
+ml/mlflow.db
+mlflow.db
+ml/models/production_model.pkl
+ml/models/model_metadata.json
+ml/scalers/temp_scaler.pkl
+ml/notebooks
+monitoring/logs/*.log
+monitoring/reports/*.json

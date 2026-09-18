@@ -8,6 +8,7 @@ build/
 dist/
 *.egg-info/
 
+mlruns/
 # --- Virtual Environments ---
 venv/
 ENV/
@@ -31,3 +32,4 @@ models/*.pkl
 scalers/*.pkl
 features/*.pkl
 models/model_metadata.json
+

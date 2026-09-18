@@ -12,6 +12,19 @@ services:
     environment:
       - PYTHONPATH=/app
 
+  mlflow:
+    container_name: mlflow-server
+    image: ghcr.io/mlflow/mlflow:v3.16.1
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --allowed-hosts "*"
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_volume:/mlflow
+
   backend:
     container_name: ml-backend
     build:
@@ -22,8 +35,14 @@ services:
     volumes:
       # CHANGED: Added /data/ to align with the Python scripts
       - duckdb_volume:/app/dataops/data/duckdb
+      # Share prediction/app logs with the monitoring + dashboard containers
+      - ./monitoring/logs:/app/monitoring/logs
+    environment:
+      # Training pipeline logs runs + registers the champion here
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
     depends_on:
       - dagster
+      - mlflow
 
   frontend:
     container_name: ml-frontend
@@ -32,6 +51,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
     depends_on:
       - backend
 
@@ -65,3 +86,4 @@ services:
 
 volumes:
   duckdb_volume:
+  mlflow_volume:

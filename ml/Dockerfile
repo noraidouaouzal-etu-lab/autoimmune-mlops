@@ -19,5 +19,7 @@ EXPOSE 8000
 # Set WORKDIR to ml so paths in main.py resolve correctly
 WORKDIR /app/ml
 
-# CHANGED: Checks for both models, and uses the robust table-check wait loop
-CMD ["bash", "-c", "if [ ! -f models/rfe_rf_model.pkl ] && [ ! -f models/production_model.pkl ]; then echo 'Models not found! Waiting for Dagster to build the database...'; while ! python -c \"import duckdb; duckdb.connect('/app/dataops/data/duckdb/autoimmune.duckdb', read_only=True).execute('SELECT 1 FROM main_marts.ml_patients_dataset')\" 2>/dev/null; do sleep 5; done; echo 'Database found! Starting training pipeline...'; python train_pipeline.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]
+# Boot sequence: a fresh container has no production_model.pkl (it is git/docker-ignored),
+# so it waits for the DuckDB marts and the MLflow server, trains once (logging + registering
+# the champion in MLflow), then serves. A restarted container keeps its model and skips training.
+CMD ["bash", "-c", "if [ ! -f models/production_model.pkl ]; then echo 'No production model yet. Waiting for Dagster to build the database...'; while ! python -c \"import duckdb; duckdb.connect('/app/dataops/data/duckdb/autoimmune.duckdb', read_only=True).execute('SELECT 1 FROM main_marts.ml_patients_dataset')\" 2>/dev/null; do sleep 5; done; if [ -n \"$MLFLOW_TRACKING_URI\" ]; then echo \"Waiting for MLflow at $MLFLOW_TRACKING_URI...\"; while ! python -c \"import urllib.request; urllib.request.urlopen('$MLFLOW_TRACKING_URI/health')\" 2>/dev/null; do sleep 3; done; fi; echo 'Starting training pipeline...'; python train_pipeline.py; fi && uvicorn main:app --host 0.0.0.0 --port 8000"]

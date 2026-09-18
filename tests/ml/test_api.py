@@ -22,12 +22,12 @@ def test_health_ok(client):
     body = r.json()
     assert body["status"] == "healthy"
     assert body["model_loaded"] is True
-    assert body["n_features"] == 38
+    assert body["n_features"] == 23
 
 def test_features_endpoint(client):
     r = client.get("/features")
     assert r.status_code == 200
-    assert len(r.json()["features"]) == 38
+    assert len(r.json()["features"]) == 23
 
 def test_predict_contract(client):
     r = client.post("/predict", json=_sample_payload())

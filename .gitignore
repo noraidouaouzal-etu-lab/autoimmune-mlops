@@ -12,4 +12,3 @@ monitoring/reports/*.json
 .env
 
 mlflow.db
-mlruns/

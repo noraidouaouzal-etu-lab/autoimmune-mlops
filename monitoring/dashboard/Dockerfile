@@ -6,6 +6,7 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install streamlit pandas requests
 
 COPY . .
+ENV PYTHONPATH=/app
 
 EXPOSE 8501
 

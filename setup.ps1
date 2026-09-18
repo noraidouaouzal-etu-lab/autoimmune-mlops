@@ -10,8 +10,8 @@ Write-Host "Waiting 10 seconds for Dagster to initialize..."
 Start-Sleep -Seconds 10
 
 Write-Host "`n=== 6. Generating DuckDB Database ===" -ForegroundColor Cyan
-docker exec ml-dagster mkdir -p /app/data/duckdb
-docker exec ml-dagster dagster asset materialize -f orchestration.py --select "*"
+docker exec dagster-engine mkdir -p /app/data/duckdb
+docker exec dagster-engine dagster asset materialize -f orchestration.py --select "*"
 
 Write-Host "`n=== 7. Starting Backend, Frontend, and Observability Stack ===" -ForegroundColor Cyan
 docker compose up -d

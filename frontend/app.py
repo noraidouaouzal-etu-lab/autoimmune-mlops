@@ -3,6 +3,10 @@ import requests
 from streamlit.components.v1 import html
 from streamlit_extras.let_it_rain import rain
 import json
+import os
+
+# Backend base URL: overridden by BACKEND_URL in Docker (http://backend:8000)
+API_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 
 # Configuration de la page
@@ -329,7 +333,7 @@ with st.sidebar:
     # """, unsafe_allow_html=True)
     
     try:
-        response = requests.get("http://localhost:8000/features")
+        response = requests.get(f"{API_URL}/features")
         # if response.status_code == 200:
         #     st.json(response.json())
     except:
@@ -450,7 +454,7 @@ if submitted:
     try:
         # Animation de chargement personnalisée
         with st.spinner("Analyse en cours par notre intelligence artificielle..."):
-            response = requests.post("http://localhost:8000/predict", json=data)
+            response = requests.post(f"{API_URL}/predict", json=data)
             
         if response.status_code == 200:
             result = response.json()
